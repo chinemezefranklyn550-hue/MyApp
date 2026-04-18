@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Veo 3 Cinematic Studio</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400;1,600&family=Space+Mono:wght@400;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#05070b;--s1:#0a0d14;--s2:#0f1520;--s3:#141c28;
+  --b1:#1a2334;--b2:#243040;--b3:#2e3e55;
+  --gold:#c8a94a;--gold2:#e6c96e;
+  --cyan:#00d4ff;--red:#ff3a3a;--green:#00e676;--orange:#ff7c00;
+  --text:#dde4f0;--muted:#6b7d99;--dim:#3a4a60;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--s1)}
+::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
+.app{min-height:100vh;background:var(--bg);position:relative;overflow-x:hidden}
+.app::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;
+  background:radial-gradient(ellipse 80% 50% at 15% 0%,rgba(0,212,255,.04) 0%,transparent 60%),
+  radial-gradient(ellipse 60% 40% at 85% 100%,rgba(200,169,74,.06) 0%,transparent 60%);
+  pointer-events:none;z-index:0}
+.hdr{position:relative;z-index:1;padding:44px 20px 32px;text-align:center;border-bottom:1px solid var(--b1)}
+.hdr-badge{display:inline-flex;align-items:center;gap:8px;font-family:'Space Mono',monospace;font-size:10px;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);background:rgba(0,212,255,.07);
+  border:1px solid rgba(0,212,255,.2);padding:5px 14px;border-radius:2px;margin-bottom:18px}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.6)}}
+.title{font-family:'Cormorant Garamond',serif;font-size:clamp(30px,5vw,56px);font-weight:700;line-height:1.05}
+.title em{color:var(--gold);font-style:italic}
+.subtitle{margin-top:10px;font-size:13px;color:var(--muted);letter-spacing:.06em}
+.main{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:32px 18px 100px;display:flex;flex-direction:column;gap:20px}
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:4px;overflow:hidden}
+.card-hdr{padding:13px 18px;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:10px}
+.card-num{font-family:'Space Mono',monospace;font-size:10px;color:var(--gold);background:rgba(200,169,74,.1);
+  border:1px solid rgba(200,169,74,.25);width:24px;height:24px;border-radius:2px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.card-title{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+.card-sub{font-size:11px;color:var(--muted);margin-left:auto}
+.card-body{padding:18px}
+.presets{display:flex;gap:9px;flex-wrap:wrap}
+.preset-btn{font-family:'Syne',sans-serif;font-size:12px;font-weight:500;padding:8px 14px;
+  border:1px solid var(--b2);background:var(--s2);color:var(--muted);border-radius:2px;cursor:pointer;transition:all .2s}
+.preset-btn:hover{border-color:var(--gold);color:var(--gold2);background:rgba(200,169,74,.06)}
+.field{display:flex;flex-direction:column;gap:7px;margin-bottom:14px}
+.lbl{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.lbl .opt{font-weight:400;text-transform:none;color:var(--dim);margin-left:6px}
+textarea,select{background:var(--s2);border:1px solid var(--b2);border-radius:3px;color:var(--text);
+  font-family:'Syne',sans-serif;font-size:14px;padding:11px 14px;outline:none;transition:border-color .2s;width:100%}
+textarea{resize:vertical;min-height:90px;line-height:1.6}
+textarea:focus,select:focus{border-color:rgba(200,169,74,.4)}
+select{appearance:none;cursor:pointer;padding-right:36px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7d99' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center}
+select option{background:#0a0d14}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.char-zone{border:1px dashed var(--b2);border-radius:3px;cursor:pointer;transition:all .2s;
+  background:var(--s2);overflow:hidden;min-height:180px;display:flex;align-items:center;justify-content:center}
+.char-zone:hover{border-color:rgba(0,212,255,.35)}
+.char-zone.filled{border-style:solid;border-color:rgba(200,169,74,.35)}
+.char-zone img{width:100%;max-height:260px;object-fit:cover;display:block}
+.char-upload-inner{text-align:center;padding:24px}
+.char-upload-icon{font-size:40px;margin-bottom:12px}
+.char-upload-txt{font-size:13px;color:var(--muted);line-height:1.6}
+.char-upload-txt strong{color:var(--cyan)}
+.char-badge{display:inline-flex;align-items:center;gap:6px;font-family:'Space Mono',monospace;
+  font-size:10px;color:var(--green);background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.2);
+  padding:4px 10px;border-radius:2px;margin-top:10px;letter-spacing:.06em}
+.char-desc-box{background:var(--s3);border:1px solid var(--b1);border-radius:3px;padding:14px;
+  font-family:'Space Mono',monospace;font-size:11px;color:#8ab0d0;line-height:1.9;margin-top:12px}
+.dur-row{display:flex;gap:10px;flex-wrap:wrap}
+.dur-pill{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;letter-spacing:.1em;
+  padding:11px 20px;border:1px solid var(--b2);background:var(--s2);color:var(--muted);
+  border-radius:3px;cursor:pointer;transition:all .2s}
+.dur-pill:hover{border-color:rgba(200,169,74,.4);color:var(--gold2)}
+.dur-pill.active{border-color:var(--gold);color:#040507;background:linear-gradient(135deg,#b8932a,#c8a94a,#ddb960)}
+.dur-note{font-size:11px;color:var(--dim);margin-top:8px;font-family:'Space Mono',monospace}
+.tone-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.tone-card{background:var(--s2);border:1px solid var(--b2);border-radius:3px;padding:14px 16px;cursor:pointer;transition:all .2s;position:relative}
+.tone-card:hover{border-color:rgba(200,169,74,.3)}
+.tone-card.active{border-color:var(--gold);background:rgba(200,169,74,.07)}
+.tone-icon{font-size:22px;margin-bottom:8px}
+.tone-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:3px}
+.tone-desc{font-size:11px;color:var(--muted);font-family:'Space Mono',monospace}
+.tone-active-tag{position:absolute;top:8px;right:8px;font-size:9px;font-family:'Space Mono',monospace;
+  letter-spacing:.1em;color:var(--gold);background:rgba(200,169,74,.15);border:1px solid rgba(200,169,74,.3);padding:2px 6px;border-radius:2px}
+.vc-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.vc-group{display:flex;flex-direction:column;gap:6px;flex:1;min-width:140px}
+.vc-label{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.slider-wrap{display:flex;align-items:center;gap:10px}
+.slider-val{font-family:'Space Mono',monospace;font-size:12px;color:var(--gold);min-width:30px;text-align:right}
+input[type=range]{-webkit-appearance:none;flex:1;height:3px;background:var(--b2);border-radius:2px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--gold);cursor:pointer}
+.sound-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:8px}
+.sound-btn{font-size:12px;font-weight:500;padding:9px 12px;border:1px solid var(--b2);background:var(--s2);
+  color:var(--muted);border-radius:3px;cursor:pointer;transition:all .2s;text-align:center}
+.sound-btn:hover{border-color:rgba(0,212,255,.3);color:var(--cyan)}
+.sound-btn.active{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,.07)}
+.gen-row{display:flex;gap:12px;flex-wrap:wrap}
+.btn{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;letter-spacing:.1em;padding:15px 30px;
+  border-radius:3px;cursor:pointer;transition:all .22s;border:none;display:flex;align-items:center;
+  gap:9px;justify-content:center;text-transform:uppercase}
+.btn-main{background:linear-gradient(135deg,#b8932a,#c8a94a,#ddb960);color:#040507;flex:1}
+.btn-main:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 10px 40px rgba(200,169,74,.3)}
+.btn-main:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn-sec{background:var(--s2);border:1px solid var(--b2);color:var(--muted)}
+.btn-sec:hover:not(:disabled){border-color:var(--gold);color:var(--gold2)}
+.btn-sec:disabled{opacity:.35;cursor:not-allowed}
+.pipeline{display:flex;align-items:center;overflow-x:auto;padding-bottom:2px}
+.pipe-step{display:flex;align-items:center;gap:8px;padding:8px 14px;border:1px solid var(--b1);
+  background:var(--s1);flex-shrink:0;font-size:11px;font-family:'Space Mono',monospace;
+  letter-spacing:.06em;color:var(--dim);transition:all .3s}
+.pipe-step:first-child{border-radius:3px 0 0 3px}
+.pipe-step:last-child{border-radius:0 3px 3px 0}
+.pipe-step+.pipe-step{border-left:none}
+.pipe-step.done{border-color:rgba(0,230,118,.3);color:var(--green);background:rgba(0,230,118,.06)}
+.pipe-step.active{border-color:rgba(200,169,74,.4);color:var(--gold);background:rgba(200,169,74,.08)}
+.pipe-dot{width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0}
+.pipe-step.active .pipe-dot{animation:pulse 1s infinite}
+.script-container{display:flex;flex-direction:column;gap:14px}
+.scene-card{background:var(--s2);border:1px solid var(--b2);border-radius:3px;overflow:hidden}
+.scene-hdr{padding:10px 14px;background:var(--s3);border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.scene-num{font-family:'Space Mono',monospace;font-size:10px;color:var(--gold);background:rgba(200,169,74,.1);border:1px solid rgba(200,169,74,.2);padding:3px 8px;border-radius:2px}
+.scene-title{font-size:13px;font-weight:700}
+.scene-dur{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)}
+.scene-body{padding:14px;display:flex;flex-direction:column;gap:12px}
+.ss-label{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin-bottom:5px}
+.ss-label.action{color:#a78bfa}
+.ss-label.narr{color:var(--cyan)}
+.ss-label.dialog{color:var(--gold)}
+.ss-label.veo{color:var(--orange)}
+.ss-text{font-size:13px;color:#c0d0e8;line-height:1.75}
+.ss-prompt{background:var(--s3);border:1px solid var(--b1);border-radius:3px;padding:12px;font-family:'Space Mono',monospace;font-size:11px;color:#8ab0c8;line-height:1.8}
+.player-panel{background:var(--s2);border:1px solid var(--b2);border-radius:3px;padding:18px}
+.player-top{display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+.player-art{width:52px;height:52px;border-radius:3px;background:linear-gradient(135deg,var(--s3),var(--b1));display:flex;align-items:center;justify-content:center;font-size:24px;border:1px solid var(--b2);flex-shrink:0}
+.player-info{flex:1;min-width:0}
+.player-track{font-size:15px;font-weight:700;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.player-tone{font-family:'Space Mono',monospace;font-size:11px;color:var(--muted)}
+.player-status{font-family:'Space Mono',monospace;font-size:10px;padding:3px 8px;border-radius:2px;letter-spacing:.08em}
+.player-status.playing{color:var(--green);background:rgba(0,230,118,.1);border:1px solid rgba(0,230,118,.2)}
+.player-status.stopped{color:var(--muted);background:var(--s3);border:1px solid var(--b1)}
+.player-status.loading{color:var(--gold);background:rgba(200,169,74,.1);border:1px solid rgba(200,169,74,.2)}
+.ctrl-row{display:flex;gap:10px;flex-wrap:wrap}
+.ctrl-btn{font-family:'Syne',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;padding:9px 18px;border-radius:3px;cursor:pointer;transition:all .2s;border:none;display:flex;align-items:center;gap:7px;text-transform:uppercase}
+.ctrl-play{background:linear-gradient(135deg,#b8932a,#c8a94a);color:#040507}
+.ctrl-play:hover{transform:translateY(-1px)}
+.ctrl-stop{background:var(--s3);border:1px solid var(--b2);color:var(--muted)}
+.ctrl-stop:hover{border-color:var(--red);color:var(--red)}
+.ctrl-dl{background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.2);color:var(--cyan)}
+.ctrl-dl:hover{background:rgba(0,212,255,.15)}
+.waveform{height:40px;display:flex;align-items:center;gap:2px;margin-top:12px;padding:8px 0}
+.wave-bar{flex:1;border-radius:2px;background:var(--b2);transition:background .3s;height:12px}
+.wave-bar.playing{background:var(--gold);animation:wave var(--d) ease-in-out infinite alternate}
+@keyframes wave{from{transform:scaleY(1)}to{transform:scaleY(var(--h))}}
+.notice{background:rgba(255,124,0,.06);border:1px solid rgba(255,124,0,.2);border-radius:3px;padding:12px 16px;font-size:12px;color:#b07030;display:flex;gap:10px;align-items:flex-start;line-height:1.6}
+.err{background:rgba(255,58,58,.07);border:1px solid rgba(255,58,58,.25);border-radius:3px;padding:12px 16px;font-size:13px;color:#ff8080}
+.tag{display:inline-flex;align-items:center;font-family:'Space Mono',monospace;font-size:10px;padding:3px 8px;border-radius:2px;letter-spacing:.08em}
+.tag-gold{color:var(--gold);background:rgba(200,169,74,.1);border:1px solid rgba(200,169,74,.25)}
+.tag-cyan{color:var(--cyan);background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.2)}
+.tag-purple{color:#a78bfa;background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2)}
+.tags-row{display:flex;gap:8px;flex-wrap:wrap}
+.shimmer{background:linear-gradient(90deg,var(--s2) 25%,var(--s3) 50%,var(--s2) 75%);background-size:400px 100%;animation:shimmer 1.4s infinite;border-radius:3px;margin-bottom:10px}
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+.fadeIn{animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.ftr{position:relative;z-index:1;text-align:center;padding:20px;font-family:'Space Mono',monospace;font-size:10px;color:var(--b2);letter-spacing:.1em;border-top:1px solid var(--b1)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useRef, useEffect, useCallback } = React;
+
+const MOODS = ["Cinematic","Dark","Emotional","Happy","Dramatic","Suspenseful","Inspirational","Romantic","Thriller"];
+const STYLES = ["Ultra-realistic","Photorealistic cinematic","Anime style","3D animation","Documentary","Sci-fi futuristic","Vintage film","Neo-noir"];
+const DURATIONS = [
+  {label:"1 MIN",val:"1 minute",secs:60},
+  {label:"2 MIN",val:"2 minutes",secs:120},
+  {label:"3 MIN",val:"3 minutes",secs:180},
+  {label:"4 MIN",val:"4 minutes",secs:240},
+  {label:"5 MIN",val:"5 minutes",secs:300},
+];
+const VOICE_TONES = [
+  {id:"deep",label:"Deep & Authoritative",icon:"🎙️",rate:0.82,pitch:0.55,desc:"Bold, commanding"},
+  {id:"warm",label:"Warm & Friendly",icon:"😊",rate:1.0,pitch:1.15,desc:"Inviting, approachable"},
+  {id:"dramatic",label:"Dramatic & Intense",icon:"🎭",rate:0.88,pitch:0.7,desc:"Powerful, emotional"},
+  {id:"soft",label:"Soft & Emotional",icon:"💫",rate:0.78,pitch:1.25,desc:"Gentle, heartfelt"},
+  {id:"energetic",label:"Energetic & Upbeat",icon:"⚡",rate:1.18,pitch:1.35,desc:"High-energy, exciting"},
+  {id:"calm",label:"Calm & Professional",icon:"🎧",rate:0.92,pitch:1.0,desc:"Measured, trustworthy"},
+  {id:"mysterious",label:"Mysterious & Dark",icon:"🌑",rate:0.75,pitch:0.5,desc:"Eerie, suspenseful"},
+  {id:"epic",label:"Epic & Heroic",icon:"🏆",rate:0.9,pitch:0.65,desc:"Grand, legendary"},
+];
+const SOUND_BEDS = ["None","Cinematic Orchestra","Dark Ambient","Uplifting Piano","Dramatic Strings","Electronic Pulse","Nature & Atmosphere","Action & Tension","Emotional Piano"];
+const PRESETS = [
+  {label:"🎬 Movie Trailer",idea:"A hero discovers they have powers and must save their city from a rising darkness",mood:"Dramatic",style:"Photorealistic cinematic",dur:"2 minutes"},
+  {label:"📱 Brand Story",idea:"An entrepreneur's journey from a small garage to building a global company",mood:"Inspirational",style:"Ultra-realistic",dur:"2 minutes"},
+  {label:"💔 Short Film",idea:"Two strangers meet on a train and share one night that changes both their lives forever",mood:"Emotional",style:"Photorealistic cinematic",dur:"3 minutes"},
+  {label:"🌆 YouTube Hook",idea:"The most shocking secret hidden inside every major city that nobody talks about",mood:"Suspenseful",style:"Documentary",dur:"1 minute"},
+];
+
+const toB64 = (file) => new Promise((res,rej) => {
+  const r = new FileReader();
+  r.onload = () => res(r.result.split(",")[1]);
+  r.onerror = rej;
+  r.readAsDataURL(file);
+});
+
+async function callClaude(system, userContent, maxTokens=2000) {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:maxTokens,system,messages:[{role:"user",content:userContent}]})
+  });
+  const data = await res.json();
+  if(data.error) throw new Error(data.error.message);
+  return data.content.map(b=>b.text||"").join("");
+}
+
+async function analyzeCharacter(imageFile) {
+  const b64 = await toB64(imageFile);
+  const mime = imageFile.type||"image/jpeg";
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:800,messages:[{role:"user",content:[
+      {type:"image",source:{type:"base64",media_type:mime,data:b64}},
+      {type:"text",text:"Analyze this character/person image. Extract a detailed physical description for AI video generation including: gender, age range, face shape, eye color/shape, skin tone, hair (color/length/style), build, distinctive features, outfit. Format as a single paragraph of 80-120 words starting with 'CHARACTER:' that can be used verbatim in Veo 3 prompts to keep the character consistent across all scenes."}
+    ]}]})
+  });
+  const data = await res.json();
+  if(data.error) throw new Error(data.error.message);
+  return data.content.map(b=>b.text||"").join("").replace(/^CHARACTER:\s*/i,"").trim();
+}
+
+function Waveform({playing}) {
+  const bars = Array.from({length:36},(_,i)=>({
+    h:(Math.sin(i*0.7)*0.5+0.6).toFixed(2),
+    d:(0.3+Math.random()*0.5).toFixed(2)+"s",
+    delay:(i*0.025).toFixed(2)+"s"
+  }));
+  return (
+    <div className="waveform">
+      {bars.map((b,i)=>(
+        <div key={i} className={`wave-bar${playing?" playing":""}`}
+          style={{height:`${10+parseInt(b.h*20)}px`,"--h":b.h,"--d":b.d,animationDelay:b.delay}}/>
+      ))}
+    </div>
+  );
+}
+
+function SceneCard({scene,idx}) {
+  return (
+    <div className="scene-card fadeIn">
+      <div className="scene-hdr">
+        <div className="scene-num">SCENE {String(idx+1).padStart(2,"0")}</div>
+        <div className="scene-title">{scene.title}</div>
+        <div className="scene-dur">{scene.duration}</div>
+      </div>
+      <div className="scene-body">
+        {scene.action&&<div><div className="ss-label action">◆ Action / Setting</div><div className="ss-text">{scene.action}</div></div>}
+        {scene.narration&&<div><div className="ss-label narr">🎙 Voice-Over Narration</div><div className="ss-text" style={{fontStyle:"italic"}}>"{scene.narration}"</div></div>}
+        {scene.dialog&&<div><div className="ss-label dialog">💬 Character Dialogue</div><div className="ss-text">"{scene.dialog}"</div></div>}
+        {scene.veoPrompt&&<div><div className="ss-label veo">🎬 Veo 3 Scene Prompt</div><div className="ss-prompt">{scene.veoPrompt}</div></div>}
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  const [idea,setIdea] = useState("");
+  const [mood,setMood] = useState("Cinematic");
+  const [style,setStyle] = useState("Photorealistic cinematic");
+  const [duration,setDuration] = useState(DURATIONS[1]);
+  const [soundBed,setSoundBed] = useState("Cinematic Orchestra");
+  const [charImage,setCharImage] = useState(null);
+  const [charPreview,setCharPreview] = useState(null);
+  const [voiceTone,setVoiceTone] = useState(VOICE_TONES[0]);
+  const [speechRate,setSpeechRate] = useState(1.0);
+  const [speechPitch,setSpeechPitch] = useState(1.0);
+  const [stage,setStage] = useState(null);
+  const [charDesc,setCharDesc] = useState("");
+  const [scenes,setScenes] = useState([]);
+  const [fullNarration,setFullNarration] = useState("");
+  const [voiceStatus,setVoiceStatus] = useState("stopped");
+  const [error,setError] = useState("");
+  const charFileRef = useRef();
+  const speechRef = useRef(null);
+  const STAGES = ["analyzing","scripting","prompting","done"];
+  const stageIdx = STAGES.indexOf(stage);
+  const isLoading = stage!==null && stage!=="done";
+  const isDone = stage==="done";
+
+  const handleCharImage = (e) => {
+    const f = e.target.files[0];
+    if(!f) return;
+    setCharImage(f);
+    const reader = new FileReader();
+    reader.onload = ev => setCharPreview(ev.target.result);
+    reader.readAsDataURL(f);
+  };
+
+  const applyPreset = (p) => {
+    setIdea(p.idea); setMood(p.mood); setStyle(p.style);
+    setDuration(DURATIONS.find(d=>d.val===p.dur)||DURATIONS[1]);
+  };
+
+  const generate = async () => {
+    if(!idea.trim()) return;
+    setError(""); setScenes([]); setCharDesc(""); setFullNarration("");
+    stopVoice();
+    try {
+      setStage("analyzing");
+      let charDescription = "";
+      if(charImage) {
+        charDescription = await analyzeCharacter(charImage);
+        setCharDesc(charDescription);
+      } else {
+        charDescription = "A compelling protagonist with expressive features, natural screen presence and strong charisma";
+        setCharDesc(charDescription);
+      }
+      setStage("scripting");
+      const numScenes = Math.round(duration.secs/25);
+      const scriptRaw = await callClaude(
+        "You are an elite Hollywood screenwriter. Return ONLY valid JSON array. No markdown, no explanation.",
+        `Create a ${duration.val} cinematic video script for Google Veo 3.\nSTORY: ${idea}\nMOOD: ${mood}\nSTYLE: ${style}\nSCENES: ${numScenes}\nCHARACTER: ${charDescription}\nSOUND: ${soundBed}\n\nReturn JSON array, each object:\n{"title":"scene title","duration":"~X seconds","action":"visual description 2-3 sentences","narration":"voice-over 1-2 sentences","dialog":"character speech or empty string","veoPrompt":"Veo 3 prompt with character desc + camera angle + lighting + motion max 80 words"}\n\nCharacter must appear in EVERY scene. Make narration powerful, suited for ${voiceTone.label} tone.`,
+        3000
+      );
+      let parsed;
+      try {
+        parsed = JSON.parse(scriptRaw.replace(/```json|```/g,"").trim());
+      } catch {
+        const m = scriptRaw.match(/\[[\s\S]*\]/);
+        if(m) parsed = JSON.parse(m[0]); else throw new Error("Script parse failed. Try again.");
+      }
+      setScenes(parsed);
+      setFullNarration(parsed.map((s,i)=>`Scene ${i+1}: ${s.narration||""} ${s.dialog||""}`).join(" ").trim());
+      setStage("prompting");
+      await new Promise(r=>setTimeout(r,600));
+      setStage("done");
+    } catch(e) {
+      setError(e.message||"Generation failed. Please try again.");
+      setStage(null);
+    }
+  };
+
+  const playVoice = useCallback(() => {
+    if(!fullNarration||!window.speechSynthesis) return;
+    stopVoice(); setVoiceStatus("loading");
+    const utter = new SpeechSynthesisUtterance(fullNarration);
+    utter.rate = voiceTone.rate * speechRate;
+    utter.pitch = voiceTone.pitch * speechPitch;
+    utter.volume = 1;
+    const voices = window.speechSynthesis.getVoices();
+    const preferred = voices.find(v=>v.lang.startsWith("en")&&(v.name.includes("Daniel")||v.name.includes("Alex")||v.name.includes("Google")))||voices.find(v=>v.lang.startsWith("en"));
+    if(preferred) utter.voice = preferred;
+    utter.onstart = ()=>setVoiceStatus("playing");
+    utter.onend = ()=>setVoiceStatus("stopped");
+    utter.onerror = ()=>setVoiceStatus("stopped");
+    speechRef.current = utter;
+    window.speechSynthesis.speak(utter);
+  },[fullNarration,voiceTone,speechRate,speechPitch]);
+
+  const stopVoice = () => { window.speechSynthesis?.cancel(); setVoiceStatus("stopped"); };
+
+  const downloadScript = () => {
+    const text = scenes.map((s,i)=>[
+      `=== SCENE ${i+1}: ${s.title} (${s.duration}) ===`,
+      `ACTION: ${s.action}`,
+      s.narration?`NARRATION: "${s.narration}"`:"",
+      s.dialog?`DIALOGUE: "${s.dialog}"`:"",
+      `VEO 3 PROMPT: ${s.veoPrompt}`,""
+    ].filter(Boolean).join("\n")).join("\n");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([text],{type:"text/plain"}));
+    a.download = "veo3-script.txt"; a.click();
+  };
+
+  return (
+    <div className="app">
+      <header className="hdr">
+        <div className="hdr-badge"><div className="badge-dot"/>AI Video Studio · Veo 3 + Claude Vision + Voice Engine</div>
+        <h1 className="title">Cinematic <em>Character</em> Video Studio</h1>
+        <p className="subtitle">Upload your character · Generate scripts · Voice your scenes · Create Veo 3 videos</p>
+      </header>
+
+      <main className="main">
+        <div>
+          <div className="lbl" style={{marginBottom:10}}>Quick Presets</div>
+          <div className="presets">{PRESETS.map(p=><button key={p.label} className="preset-btn" onClick={()=>applyPreset(p)}>{p.label}</button>)}</div>
+        </div>
+
+        {/* CHARACTER */}
+        <div className="card">
+          <div className="card-hdr"><div className="card-num">01</div><span className="card-title">Character Reference</span><span className="card-sub">Stars in every scene</span></div>
+          <div className="card-body">
+            <div className="g2">
+              <div>
+                <div className="lbl" style={{marginBottom:8}}>Character Image<span className="opt"> — recommended</span></div>
+                <div className={`char-zone${charPreview?" filled":""}`} onClick={()=>charFileRef.current.click()}>
+                  {charPreview
+                    ? <img src={charPreview} alt="Character"/>
+                    : <div className="char-upload-inner"><div className="char-upload-icon">🎭</div><div className="char-upload-txt"><strong>Upload your character</strong><br/>AI replicates this exact person<br/>across all video scenes</div></div>}
+                </div>
+                <input ref={charFileRef} type="file" accept="image/*" style={{display:"none"}} onChange={handleCharImage}/>
+                {charPreview&&<div className="char-badge">✓ Character loaded — appears in all scenes</div>}
+                {charDesc&&<div className="char-desc-box">{charDesc}</div>}
+              </div>
+              <div style={{background:"var(--s3)",border:"1px solid var(--b1)",borderRadius:3,padding:14}}>
+                <div className="lbl" style={{marginBottom:12}}>How It Works</div>
+                {[["🔍 Analyze","Claude Vision reads your character's exact features"],["📝 Script","Writes scenes where YOUR character plays every role"],["🎬 Prompts","Each Veo 3 prompt includes full character description"],["🎙️ Voice","Speech engine voices your character's narration"],["🎵 Sound","Sound design embedded into every scene prompt"]].map(([icon,text])=>(
+                  <div key={icon} style={{display:"flex",gap:10,marginBottom:10,alignItems:"flex-start"}}>
+                    <span style={{fontSize:16,flexShrink:0}}>{icon}</span>
+                    <span style={{fontSize:12,color:"var(--muted)",lineHeight:1.5}}>{text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* VIDEO BRIEF */}
+        <div className="card">
+          <div className="card-hdr"><div className="card-num">02</div><span className="card-title">Video Brief</span></div>
+          <div className="card-body">
+            <div className="field">
+              <div className="lbl">Video Story / Script Idea</div>
+              <textarea value={idea} onChange={e=>setIdea(e.target.value)} placeholder="Describe your video story (e.g. A young woman discovers a hidden power and must choose between saving the world or protecting her family)" rows={4}/>
+            </div>
+            <div className="g2">
+              <div className="field">
+                <div className="lbl">Mood</div>
+                <select value={mood} onChange={e=>setMood(e.target.value)}>{MOODS.map(m=><option key={m}>{m}</option>)}</select>
+              </div>
+              <div className="field">
+                <div className="lbl">Visual Style</div>
+                <select value={style} onChange={e=>setStyle(e.target.value)}>{STYLES.map(s=><option key={s}>{s}</option>)}</select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* DURATION */}
+        <div className="card">
+          <div className="card-hdr"><div className="card-num">03</div><span className="card-title">Video Duration</span><span className="card-sub">Up to 5 minutes</span></div>
+          <div className="card-body">
+            <div className="dur-row">{DURATIONS.map(d=><button key={d.val} className={`dur-pill${duration.val===d.val?" active":""}`} onClick={()=>setDuration(d)}>{d.label}</button>)}</div>
+            <div className="dur-note">↳ {duration.val} · ~{Math.round(duration.secs/25)} scenes auto-generated</div>
+          </div>
+        </div>
+
+        {/* VOICE STUDIO */}
+        <div className="card">
+          <div className="card-hdr"><div className="card-num">04</div><span className="card-title">Voice Studio</span><span className="card-sub">Character speaking tone</span></div>
+          <div className="card-body">
+            <div className="lbl" style={{marginBottom:10}}>Speaker Tone</div>
+            <div className="tone-grid">
+              {VOICE_TONES.map(t=>(
+                <div key={t.id} className={`tone-card${voiceTone.id===t.id?" active":""}`} onClick={()=>setVoiceTone(t)}>
+                  {voiceTone.id===t.id&&<div className="tone-active-tag">✓ ACTIVE</div>}
+                  <div className="tone-icon">{t.icon}</div>
+                  <div className="tone-name">{t.label}</div>
+                  <div className="tone-desc">{t.desc}</div>
+                </div>
+              ))}
+            </div>
+            <div className="lbl" style={{margin:"16px 0 10px"}}>Voice Fine-tuning</div>
+            <div className="vc-row">
+              <div className="vc-group"><div className="vc-label">Speed</div><div className="slider-wrap"><input type="range" min="0.5" max="1.5" step="0.05" value={speechRate} onChange={e=>setSpeechRate(parseFloat(e.target.value))}/><span className="slider-val">{speechRate.toFixed(2)}×</span></div></div>
+              <div className="vc-group"><div className="vc-label">Pitch</div><div className="slider-wrap"><input type="range" min="0.5" max="1.5" step="0.05" value={speechPitch} onChange={e=>setSpeechPitch(parseFloat(e.target.value))}/><span className="slider-val">{speechPitch.toFixed(2)}×</span></div></div>
+              <div className="vc-group"><div className="vc-label">Effective Rate</div><div style={{fontSize:18,fontFamily:"'Space Mono',monospace",color:"var(--gold)",paddingTop:8}}>{(voiceTone.rate*speechRate).toFixed(2)}×</div></div>
+              <div className="vc-group"><div className="vc-label">Effective Pitch</div><div style={{fontSize:18,fontFamily:"'Space Mono',monospace",color:"var(--cyan)",paddingTop:8}}>{(voiceTone.pitch*speechPitch).toFixed(2)}</div></div>
+            </div>
+          </div>
+        </div>
+
+        {/* SOUND */}
+        <div className="card">
+          <div className="card-hdr"><div className="card-num">05</div><span className="card-title">Sound Design</span><span className="card-sub">Background audio mood</span></div>
+          <div className="card-body">
+            <div className="sound-grid">{SOUND_BEDS.map(s=><button key={s} className={`sound-btn${soundBed===s?" active":""}`} onClick={()=>setSoundBed(s)}>{s}</button>)}</div>
+            <div className="dur-note" style={{marginTop:10}}>↳ {soundBed} · Embedded into all scene prompts for Veo 3</div>
+          </div>
+        </div>
+
+        {/* NOTICE */}
+        <div className="notice">
+          <span>⚠️</span>
+          <div><strong>Veo 3 API Note:</strong> Google Veo 3 has no public API yet. This studio uses <strong>Claude Vision</strong> to clone your character, generates full scene scripts with Veo 3 prompts, and uses <strong>Web Speech API</strong> to voice your character live. Paste scene prompts into Google VideoFX when available.</div>
+        </div>
+
+        {error&&<div className="err">⚠ {error}</div>}
+
+        {/* GENERATE */}
+        <div className="gen-row">
+          <button className="btn btn-main" onClick={generate} disabled={isLoading||!idea.trim()}>
+            {isLoading?`${stage==="analyzing"?"Analyzing Character...":stage==="scripting"?"Writing Script...":stage==="prompting"?"Building Prompts...":"Working..."}` :"🎬 Generate Full Video"}
+          </button>
+          {isDone&&<button className="btn btn-sec" onClick={generate} disabled={isLoading}>🔄 Regenerate</button>}
+        </div>
+
+        {/* PIPELINE */}
+        {(isLoading||isDone)&&(
+          <div className="pipeline fadeIn">
+            {[{key:"analyzing",label:"Analyze Character"},{key:"scripting",label:"Write Script"},{key:"prompting",label:"Build Prompts"},{key:"done",label:"Complete"}].map((s,i)=>(
+              <div key={s.key} className={`pipe-step${stage===s.key?" active":stageIdx>i||isDone?" done":""}`}>
+                <div className="pipe-dot"/>{(stageIdx>i||isDone)?"✓ ":""}{s.label}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* VOICE PLAYER */}
+        {isDone&&fullNarration&&(
+          <div className="card fadeIn">
+            <div className="card-hdr"><div className="card-num">🎙</div><span className="card-title">Voice Player — Character Speaks</span><div style={{marginLeft:"auto",display:"flex",gap:8}}><span className="tag tag-gold">{voiceTone.label}</span><span className="tag tag-cyan">{soundBed}</span></div></div>
+            <div className="card-body">
+              <div className="player-panel">
+                <div className="player-top">
+                  <div className="player-art">{voiceTone.icon}</div>
+                  <div className="player-info"><div className="player-track">{idea.slice(0,55)}{idea.length>55?"…":""}</div><div className="player-tone">{voiceTone.label} · {duration.val} · {mood}</div></div>
+                  <div className={`player-status ${voiceStatus}`}>{voiceStatus==="playing"?"● PLAYING":voiceStatus==="loading"?"↻ LOADING":"■ STOPPED"}</div>
+                </div>
+                <Waveform playing={voiceStatus==="playing"}/>
+                <div className="ctrl-row" style={{marginTop:14}}>
+                  <button className="ctrl-btn ctrl-play" onClick={playVoice} disabled={voiceStatus==="playing"}>▶ Play Voice</button>
+                  <button className="ctrl-btn ctrl-stop" onClick={stopVoice} disabled={voiceStatus==="stopped"}>■ Stop</button>
+                  <button className="ctrl-btn ctrl-dl" onClick={downloadScript}>↓ Download Script</button>
+                </div>
+                <div style={{marginTop:14,fontSize:12,color:"var(--muted)",lineHeight:1.7,fontStyle:"italic",borderTop:"1px solid var(--b1)",paddingTop:12}}>
+                  "{fullNarration.slice(0,220)}{fullNarration.length>220?"…":""}"
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* SCENES */}
+        {(scenes.length>0||isLoading)&&(
+          <div className="card fadeIn">
+            <div className="card-hdr"><div className="card-num">🎬</div><span className="card-title">Scene Breakdown & Veo 3 Prompts</span>{scenes.length>0&&<span className="card-sub">{scenes.length} scenes · {duration.val}</span>}</div>
+            <div className="card-body">
+              {isLoading&&stage==="scripting"
+                ? <div>{Array.from({length:3}).map((_,i)=><div key={i} style={{marginBottom:16}}><div className="shimmer" style={{height:40}}/><div className="shimmer" style={{height:14}}/><div className="shimmer" style={{height:14}}/><div className="shimmer" style={{height:14,width:"60%"}}/></div>)}</div>
+                : <div className="script-container">{scenes.map((s,i)=><SceneCard key={i} scene={s} idx={i}/>)}</div>}
+            </div>
+          </div>
+        )}
+
+        {isDone&&(
+          <div className="tags-row fadeIn">
+            <span className="tag tag-gold">✦ {scenes.length} Scenes</span>
+            <span className="tag tag-cyan">🎙 {voiceTone.label}</span>
+            <span className="tag tag-purple">🎵 {soundBed}</span>
+            <span className="tag tag-gold">⏱ {duration.val}</span>
+            {charImage&&<span className="tag tag-cyan">👤 Character Cloned</span>}
+          </div>
+        )}
+      </main>
+      <footer className="ftr">CINEMATIC CHARACTER STUDIO · VEO 3 + CLAUDE VISION + WEB SPEECH API</footer>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
